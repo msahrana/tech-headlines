@@ -1,37 +1,18 @@
-import Image from "next/image";
 import React from "react";
+import SignInButtons from "@/components/SignInButtons";
+import {getServerSession} from "next-auth/next";
+import {redirect} from "next/navigation";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
-const SignIn = () => {
-  return (
-    <>
-      <h1 className="text-center my-8 text-4xl font-bold">Sign In</h1>
-      <div className="flex flex-col p-4 items-center justify-center gap-4">
-        <button className="flex items-center p-4 border rounded-full gap-4 hover:bg-slate-200/25 transition">
-          <span>
-            <Image
-              src={"/github-logo.svg"}
-              width={30}
-              height={30}
-              alt="Github Logo"
-            />
-          </span>
-          Sign In With Github
-        </button>
+// eslint-disable-next-line @next/next/no-async-client-component
+const SignIn = async () => {
+  const session = await getServerSession(authOptions);
 
-        <button className="flex items-center p-4 border rounded-full gap-4 hover:bg-slate-200/25 transition">
-          <span>
-            <Image
-              src={"/google-logo.svg"}
-              width={30}
-              height={30}
-              alt="Github Logo"
-            />
-          </span>
-          Sign In With Google
-        </button>
-      </div>
-    </>
-  );
+  if (session) {
+    redirect("/dashboard");
+  }
+
+  return <SignInButtons />;
 };
 
 export default SignIn;
