@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const Dashboard = () => {
   return <div>
-    <h1 className="text-4xl font-bold">My Posts</h1>
+    <h1 className="text-4xl font-bold mt-3">My Posts</h1>
     {postData && postData.length > 0 ? (
     postData.map((post) => (
       <Post

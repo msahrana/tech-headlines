@@ -1,11 +1,30 @@
 "use client";
-import {categoriesData} from "@/data";
+import {TCategory} from "@/app/types";
 import Link from "next/link";
-import React, {useState} from "react";
+import {useRouter} from "next/navigation";
+import React, {useEffect, useState} from "react";
+import toast from "react-hot-toast";
 
 const CreatePostForm = () => {
   const [links, setLinks] = useState<string[]>([]);
   const [linkInput, setLinkInput] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [categories, setCategories] = useState<TCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [publicId, setPublicId] = useState("");
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      const res = await fetch("/api/categories");
+      const catNames = await res.json();
+      setCategories(catNames);
+    };
+    fetchAllCategories();
+  }, []);
 
   const addLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
@@ -15,28 +34,63 @@ const CreatePostForm = () => {
     }
   };
 
-  const deleteLink = (index:number)=>{
-    setLinks((prev)=> prev.filter((_, i)=>i !== index))
-  }
+  const deleteLink = (index: number) => {
+    setLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title || !content) {
+      const errorMessage = "Title and content are required";
+      toast.error(errorMessage);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/posts/", {
+        method: "POST",
+        headers: {
+          "Contect-type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          links,
+          selectedCategory,
+          imageUrl,
+          publicId,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Post Created Successfully");
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold my-3">Create Post</h1>
-      <form className="flex flex-col gap-3 w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
         <div>
           <input
             className="px-4 py-2 border border-slate-300 rounded-md w-full"
             type="text"
-            name="title"
             placeholder="Title"
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div>
           <textarea
             className="px-4 py-2 border border-slate-300 rounded-md h-36 w-full"
-            name="content"
             placeholder="Content"
+            onChange={(e) => setContent(e.target.value)}
           ></textarea>
         </div>
 
@@ -107,12 +161,15 @@ const CreatePostForm = () => {
         </div>
 
         <div className="border border-slate-300 rounded-md w-full">
-          <select className="p-3 rounded-md border appearance-none w-full">
+          <select
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="p-3 rounded-md border appearance-none w-full"
+          >
             <option value="">Select a Category</option>
-            {categoriesData &&
-              categoriesData.map((category) => (
-                <option key={category.id} value={category.name}>
-                  {category.name}
+            {categories &&
+              categories.map((category) => (
+                <option key={category.id} value={category.catName}>
+                  {category.catName}
                 </option>
               ))}
           </select>
