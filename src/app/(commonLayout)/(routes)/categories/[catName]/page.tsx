@@ -10,7 +10,7 @@ const getPosts = async (catName: string): Promise<TPost[] | null> => {
     );
     if (res.ok) {
       const categories = await res.json();
-      return categories.posts as TPost[]
+      return categories.posts as TPost[];
     }
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -18,13 +18,15 @@ const getPosts = async (catName: string): Promise<TPost[] | null> => {
   return null;
 };
 
-interface CategoryPostsProps {
-  params: { catName: string };
+interface Params {
+  catName: string;
 }
 
 const CategoryPosts = async ({
   params,
-}: CategoryPostsProps): Promise<JSX.Element> => {
+}: {
+  params: Params;
+}): Promise<JSX.Element> => {
   const category = params.catName;
   const posts = await getPosts(category);
 
