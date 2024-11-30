@@ -27,7 +27,7 @@ export default function RootLayout({
             <div className="flex-auto">{children}</div>
             <Footer />
           </div>
-          <Toaster position="top-left" reverseOrder={false} />
+          <Toaster />
         </NextAuthProviders>
       </body>
     </html>

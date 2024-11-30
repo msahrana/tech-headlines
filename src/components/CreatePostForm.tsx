@@ -72,8 +72,7 @@ const CreatePostForm = () => {
     e.preventDefault();
 
     if (!title || !content) {
-      const errorMessage = "Title and content are required";
-      toast.error(errorMessage);
+      toast.error("Title and content are required");
       return;
     }
 
