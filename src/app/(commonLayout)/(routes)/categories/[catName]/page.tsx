@@ -10,7 +10,7 @@ const getPosts = async (catName: string): Promise<TPost[] | null> => {
     );
     if (res.ok) {
       const categories = await res.json();
-      const posts = categories.posts;
+      const posts: TPost[] = categories.posts;
       return posts;
     }
   } catch (error) {
@@ -19,7 +19,11 @@ const getPosts = async (catName: string): Promise<TPost[] | null> => {
   return null;
 };
 
-const CategoryPosts = async ({params}: {params: {catName: string}}) => {
+const CategoryPosts = async ({
+  params,
+}: {
+  params: {catName: string};
+}): Promise<JSX.Element> => {
   const category = params.catName;
   const posts = await getPosts(category);
 

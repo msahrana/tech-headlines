@@ -10,7 +10,7 @@ export type TPost = {
   imageUrl?: string;
   publicId?: string;
   catName?: string;
-  links: null | string[];
+  links?: string[];
   createdAt: string;
   authorEmail: string;
   author: {
