@@ -1,13 +1,13 @@
 "use client";
-import {TCategory} from "@/app/types";
+import {TCategory, TPost} from "@/app/types";
+import {CldUploadButton, CloudinaryUploadWidgetResults} from "next-cloudinary";
+import Image from "next/image";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import React, {useEffect, useState} from "react";
 import toast from "react-hot-toast";
-import {CldUploadButton, CloudinaryUploadWidgetResults} from "next-cloudinary";
-import Image from "next/image";
 
-const CreatePostForm = () => {
+const EditPostForm = ({post}: {post: TPost}) => {
   const [links, setLinks] = useState<string[]>([]);
   const [linkInput, setLinkInput] = useState("");
   const [title, setTitle] = useState("");
@@ -22,11 +22,36 @@ const CreatePostForm = () => {
   useEffect(() => {
     const fetchAllCategories = async () => {
       const res = await fetch("/api/categories");
-      const data = await res.json();
-      setCategories(data);
+      const catNames = await res.json();
+      setCategories(catNames);
     };
     fetchAllCategories();
-  }, []);
+
+    const initValues = () => {
+      setTitle(post.title);
+      setContent(post.content);
+      setImageUrl(post.imageUrl || "");
+      setPublicId(post.publicId || "");
+      setSelectedCategory(post.catName || "");
+      setLinks(post.links || []);
+    };
+    initValues();
+  }, [
+    post.title,
+    post.content,
+    post.imageUrl,
+    post.publicId,
+    post.catName,
+    post.links,
+  ]);
+
+  const addLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    if (linkInput.trim() !== "") {
+      setLinks((prev) => [...prev, linkInput]);
+      setLinkInput("");
+    }
+  };
 
   const handleImageUpload = (result: CloudinaryUploadWidgetResults) => {
     const info = result.info as object;
@@ -36,14 +61,6 @@ const CreatePostForm = () => {
       const public_id = info.public_id as string;
       setImageUrl(url);
       setPublicId(public_id);
-    }
-  };
-
-  const addLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault();
-    if (linkInput.trim() !== "") {
-      setLinks((prev) => [...prev, linkInput]);
-      setLinkInput("");
     }
   };
 
@@ -78,8 +95,8 @@ const CreatePostForm = () => {
     }
 
     try {
-      const res = await fetch("/api/posts/", {
-        method: "POST",
+      const res = await fetch(`/api/posts/${post.id}`, {
+        method: "PUT",
         headers: {
           "Contect-type": "application/json",
         },
@@ -94,18 +111,19 @@ const CreatePostForm = () => {
       });
 
       if (res.ok) {
-        toast.success("Post Created Successfully!");
+        toast.success("Post Edited Successfully!");
         router.push("/dashboard");
         router.refresh();
       }
     } catch (error) {
+      toast.error("Something went wrong");
       console.log(error);
     }
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold my-3">Create Post</h1>
+      <h1 className="text-2xl font-bold my-3">Edit Post</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
         <div>
           <input
@@ -113,6 +131,7 @@ const CreatePostForm = () => {
             type="text"
             placeholder="Title"
             onChange={(e) => setTitle(e.target.value)}
+            value={title}
           />
         </div>
 
@@ -121,6 +140,7 @@ const CreatePostForm = () => {
             className="px-4 py-2 border border-slate-300 rounded-md h-36 w-full"
             placeholder="Content"
             onChange={(e) => setContent(e.target.value)}
+            value={content}
           ></textarea>
         </div>
 
@@ -241,6 +261,7 @@ const CreatePostForm = () => {
           <select
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="p-3 rounded-md border appearance-none w-full"
+            value={selectedCategory}
           >
             <option value="">Select a Category</option>
             {categories &&
@@ -257,7 +278,7 @@ const CreatePostForm = () => {
             className="w-full bg-slate-800 px-4 py-2 text-white rounded-md"
             type="submit"
           >
-            Create Post
+            Update Post
           </button>
         </div>
       </form>
@@ -265,4 +286,4 @@ const CreatePostForm = () => {
   );
 };
 
-export default CreatePostForm;
+export default EditPostForm;

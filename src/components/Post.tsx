@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import DeleteButton from "./DeleteButton";
+import {getServerSession} from "next-auth/next";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 interface IPostProps {
   id: string;
@@ -15,7 +17,7 @@ interface IPostProps {
   links?: string[];
 }
 
-const Post = ({
+const Post = async ({
   id,
   author,
   authorEmail,
@@ -26,12 +28,28 @@ const Post = ({
   content,
   links,
 }: IPostProps) => {
-  const isEditable = true;
+  const session = await getServerSession(authOptions);
+  const isEditable = session && session?.user?.email === authorEmail;
+
+  const dateObject = new Date(date);
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  };
+  const dateFormate = dateObject.toLocaleDateString("en-US", options);
 
   return (
     <div className="my-4 border-b border-b-300 py-8">
-      <div>
-        Posted By: <span className="font-bold">{author},</span> on {date}
+      <div className="mb-2">
+        {author ? (
+          <>
+            Posted By: <span className="font-bold">{author},</span> on{" "}
+            {dateFormate}
+          </>
+        ) : (
+          <>Posted on {dateFormate}</>
+        )}
       </div>
 
       <div className="w-full h-60 relative mt-1">
@@ -103,8 +121,8 @@ const Post = ({
       <div>
         {isEditable && (
           <div className="flex gap-3 font-bold py-2 px-4 rounded-md bg-slate-200 w-fit">
-            <Link href={`/sdit-post/${id}`}>Edit</Link>
-            <DeleteButton />
+            <Link href={`/edit-post/${id}`}>Edit</Link>
+            <DeleteButton id={id} />
           </div>
         )}
       </div>
